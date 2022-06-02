@@ -325,6 +325,28 @@ class DetectMultiBackend(nn.Module):
         elif dnn:  # ONNX OpenCV DNN
             print(f'Loading {w} for ONNX OpenCV DNN inference...')
             net = cv2.dnn.readNetFromONNX(w)
+            device = int(str(device).split(':')[-1])
+            # OpenCV GPU on CUDA support
+            try:
+                device_count = cv2.cuda.getCudaEnabledDeviceCount()
+                print("[INFO] GPU device count", device_count)
+                cv2.cuda.setDevice(device)
+                print(f"DNN_TARGET_CUDA set to GPU id {device}")
+
+                net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+                net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
+                print("[INFO] You are using DNN_TARGET_CUDA_FP16 backend to increase the FPS. "
+                      "Please make sure your GPU supports floating point 16, or change it back to DNN_TARGET_CUDA. "
+                      "Ref: https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#arithmetic-instructions")
+            except Exception as e:
+                print(e)
+                print("[INFO] Please build OpenCV with GPU support in order to use DNN_BACKEND_CUDA: "
+                      "https://www.pyimagesearch.com/2020/02/03/how-to-use-opencvs-dnn-module-with-nvidia-"
+                      "gpus-cuda-and-cudnn/")
+                print("[INFO] Shifting back to DNN_TARGET_CPU")
+                net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+                net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
+                pass
         elif onnx:  # ONNX Runtime
             print(f'Loading {w} for ONNX Runtime inference...')
             cuda = torch.cuda.is_available()
@@ -473,6 +495,7 @@ class DetectMultiBackend(nn.Module):
     def warmup(self, imgsz=(1, 3, 640, 640)):
         # Warmup model by running inference once
         warmup_types = self.pt, self.jit, self.onnx, self.engine, self.saved_model, self.pb
+        self.device = torch.device(self.device)
         if any(warmup_types) and self.device.type != 'cpu':
             im = torch.zeros(*imgsz, dtype=torch.half if self.fp16 else torch.float, device=self.device)  # input
             for _ in range(2 if self.jit else 1):  #
