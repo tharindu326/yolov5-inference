@@ -94,14 +94,14 @@ class InferenceYOLOV5:
     def inferYOLOV5(self, img0):
 
         # img0 = cv2.imread(image)
-        img = self.letterbox(img0, self.imgsz, stride=self.stride, auto=self.pt)[0]
+        # img = self.letterbox(img0, self.imgsz, stride=self.stride, auto=self.pt)[0]
 
         # Convert
-        img = img.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB
+        img = img0.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB
         img = np.ascontiguousarray(img)
 
         # Run inference
-        self.model.warmup(imgsz=(1, 3, *self.imgsz))  # warmup
+        # self.model.warmup(imgsz=(1, 3, *self.imgsz))  # warmup
         im = torch.from_numpy(img).to(self.device)
         im = im.half() if self.model.fp16 else im.float()  # uint8 to fp16/32
         im /= 255  # 0 - 255 to 0.0 - 1.0
