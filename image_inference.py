@@ -199,6 +199,6 @@ if __name__ == "__main__":
     model_files = ModelFileYOLOv5(model_directory)
     target_gpu_device = 'cpu'
     inference = InferenceYOLOV5(target_gpu_device, model_files, overlay=True)
-    bboxes, scores, class_names, class_ids = inference.inferYOLOV5(img0)
+    bboxes, scores, class_names, class_ids, image = inference.inferYOLOV5(img0)
     output_data = {'bboxes': bboxes, 'scores': scores, 'class_names': class_names, 'class_ids': class_ids}
     print(json.dumps(output_data, indent=4))
