@@ -23,7 +23,6 @@ from config import cfg
 import cv2
 import numpy as np
 import torch
-import torchvision
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0]  # YOLOv5 root directory
@@ -86,22 +85,19 @@ class InferenceYOLOV5:
         # Load model
         self.device = select_device(self.device_gpu)
         self.model = DetectMultiBackend(self.weight_file, device=self.device, dnn=self.dnn, data=self.data,
-                                   fp16=self.FP16_half_precision)
+                                        fp16=self.FP16_half_precision)
         self.stride, self.names, self.pt = self.model.stride, self.model.names, self.model.pt
-        imgsz = check_img_size(self.imgsz, s=self.stride)  # check image size
 
     @torch.no_grad()
     def inferYOLOV5(self, img0):
 
-        # img0 = cv2.imread(image)
-        # img = self.letterbox(img0, self.imgsz, stride=self.stride, auto=self.pt)[0]
+        img = self.letterbox(img0, self.imgsz, stride=self.stride, auto=self.pt)[0]
 
         # Convert
-        img = img0.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB
+        img = img.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB
         img = np.ascontiguousarray(img)
 
         # Run inference
-        # self.model.warmup(imgsz=(1, 3, *self.imgsz))  # warmup
         im = torch.from_numpy(img).to(self.device)
         im = im.half() if self.model.fp16 else im.float()  # uint8 to fp16/32
         im /= 255  # 0 - 255 to 0.0 - 1.0
@@ -112,7 +108,7 @@ class InferenceYOLOV5:
         pred = self.model(im)
         # NMS
         pred = non_max_suppression(pred, self.confidence_threshold, self.nms_iou_threshold, self.classes,
-                                        self.agnostic_nms, max_det=self.max_detections)
+                                   self.agnostic_nms, max_det=self.max_detections)
 
         # Second-stage classifier (optional)
         # pred = utils.general.apply_classifier(pred, classifier_model, im, im0s)

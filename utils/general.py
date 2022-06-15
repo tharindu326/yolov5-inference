@@ -2,6 +2,7 @@ import math
 import torch
 import numpy as np
 import pkg_resources as pkg
+import torchvision
 
 
 def check_img_size(imgsz, s=32, floor=0):
