@@ -9,7 +9,7 @@ cfg = __C
 
 # YOLOv5
 __C.inferYOLOV5 = edict()
-__C.inferYOLOV5.weight_file = "yolov5s.pt"  # model.pt path(s)
+__C.inferYOLOV5.weight_file = "yolov5x6.pt"  # model.pt path(s)
 __C.inferYOLOV5.label_file = "coco128.yaml"  # dataset.yaml path
 __C.inferYOLOV5.imgsize = (640, 640)  # inference size (height, width)
 __C.inferYOLOV5.conf_thres = 0.25  # confidence threshold
